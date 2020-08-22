@@ -1,5 +1,9 @@
 **/*.ibc
 **/*.o
+**/*.ttm
+**/*.d
+**/*.a
+**/*.so
 **/*.swp
 **/build
 **/target
