@@ -122,3 +122,5 @@ sumEntries : Num a => { n : _ } -> (pos : Integer) -> Vect n a -> Vect n a -> Ma
 sumEntries pos xs ys = case integerToFin pos n of
                             Nothing => Nothing
                             Just idx => Just (index idx xs + index idx ys)
+
+-- see Ex4_1.idr
