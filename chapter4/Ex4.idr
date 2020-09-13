@@ -1,5 +1,7 @@
 module Ex4
 
+import Data.Vect
+
 data Tree : (elem : Type) -> Type where
   Empty : Ord elem => Tree elem
   Node : Ord elem => (left : Tree elem) -> (val : elem) -> (right : Tree elem) -> Tree elem
@@ -83,3 +85,40 @@ biggestTriangle (Combine p1 p2) = case biggestTriangle p1 of
                                                        Nothing => Nothing
 biggestTriangle (Rotate _ p) = biggestTriangle p
 biggestTriangle (Translate _ _ p) = biggestTriangle p
+
+-- dependent types
+
+data PowerSource = Petrol | Pedal | Electricity
+
+data Vehicle : PowerSource -> Type where
+  Bicycle : Vehicle Pedal
+  Unicycle : Vehicle Pedal
+  Motorcycle : (fuel : Nat) -> Vehicle Petrol
+  Car : (fuel : Nat) -> Vehicle Petrol
+  Bus : (fuel : Nat) -> Vehicle Petrol
+  Tram : (watts : Nat) -> Vehicle Electricity
+
+wheels : Vehicle power -> Nat
+wheels Bicycle = 2
+wheels Unicycle = 2
+wheels (Motorcycle _) = 2
+wheels (Car _) = 4
+wheels (Bus _) = 4
+wheels (Tram _) = 16
+
+refuel : Vehicle Petrol -> Vehicle Petrol
+refuel Bicycle impossible
+refuel Unicycle impossible
+refuel (Tram _) impossible
+refuel (Motorcycle _) = Motorcycle 50
+refuel (Car _) = Car 100
+refuel (Bus _) = Bus 200
+
+vectTake : (m : Fin (S n)) -> Vect n elem -> Vect (finToNat m) elem
+vectTake FZ _ = []
+vectTake (FS m) (x :: xs) = x :: vectTake m xs
+
+sumEntries : Num a => { n : _ } -> (pos : Integer) -> Vect n a -> Vect n a -> Maybe a
+sumEntries pos xs ys = case integerToFin pos n of
+                            Nothing => Nothing
+                            Just idx => Just (index idx xs + index idx ys)
