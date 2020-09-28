@@ -1,5 +1,9 @@
 module Chapter5
 
+import Data.Vect
+
+%default total
+
 printLength : HasIO io => io ()
 printLength = putStr "Enter a string: " >>= \_ =>
                 getLine >>= \input =>
@@ -40,3 +44,29 @@ usePair = do p <- readPair
 usePairImproved : HasIO io => io ()
 usePairImproved = do (f, s) <- readPair
                      putStrLn $ "You entered the following strings: " ++ f ++ ", " ++ s
+
+-- reading and validating dependent types
+
+myZip : Vect n a -> Vect n b -> Vect n (a, b)
+myZip [] [] = []
+myZip (x :: xs) (y :: ys) = (x, y) :: myZip xs ys
+
+partial
+readVect : HasIO io => io (n : Nat ** Vect n String)
+readVect = do x <- getLine
+              if x == ""
+                 then pure $ (_ ** [])
+                 else do (_ ** xs) <- readVect
+                         pure $ (_ ** (x :: xs))
+
+partial
+zipInputs : HasIO io => io ()
+zipInputs = do putStrLn "Enter the first vector (blank line to end)"
+               (len1 ** xs) <- readVect
+               putStrLn "Enter the second vector (blank line to end)"
+               (len2 ** ys) <- readVect
+               case exactLength len1 ys of -- exactLength is needed here to ensure type safety (== check would not work)
+                    Nothing => putStrLn "Vectors are of different lengths"
+                    Just ys' => printLn $ zip xs ys'
+
+
