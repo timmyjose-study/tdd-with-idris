@@ -1,7 +1,9 @@
 module Ex5
 
 import Data.Strings
+import Data.Vect
 import System
+import System.File
 
 %default total
 
@@ -77,4 +79,43 @@ adder = myReplWith 0 "Enter a number: " (\acc, s => case all isDigit (unpack s) 
                                                          True => let n = stringToNatOrZ s in
                                                                      Just $ ("Current value: " ++ show (acc + n) ++ "\n", acc + n))
 
+partial
+readToBlank : HasIO io => io (List String)
+readToBlank = do line <- getLine
+                 if line == ""
+                    then pure []
+                    else do lines <- readToBlank
+                            pure (line :: lines)
 
+partial
+readAndSave : HasIO io => io ()
+readAndSave = do lines <- readToBlank
+                 filename <- getLine
+                 Right () <- writeFile filename (unwords (map (\line => line ++ "\n") lines))
+                  | Left err => putStrLn $ "Error while writing to file: " ++ show err
+                 putStrLn "Wrote to file successfully"
+
+partial
+printFile : HasIO io => io ()
+printFile = do filename <- getLine
+               Right contents <- readFile filename 
+                | Left err => putStrLn $ "Error while reading file: " ++ show err
+               putStrLn contents
+
+partial
+readVectFile : (filename : String) -> IO (n ** Vect n String)
+readVectFile filename = do Right handle <- openFile filename Read
+                            | Left err => do putStrLn $ "error while reading file: " ++ show err
+                                             pure (_ ** [])
+                           readFileHelper handle 
+  where
+    partial
+    readFileHelper : File -> IO (n ** Vect n String)
+    readFileHelper handle = do end <- fEOF handle
+                               if end
+                                  then pure (_ ** [])
+                                  else do Right line <- fGetLine handle
+                                            | Left err => do putStrLn $ "error while reading line from file: " ++ show err
+                                                             pure (_ ** [])             
+                                          do (_ ** lines) <- readFileHelper handle
+                                             pure (_ ** (line :: lines))

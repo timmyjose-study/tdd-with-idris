@@ -68,5 +68,3 @@ zipInputs = do putStrLn "Enter the first vector (blank line to end)"
                case exactLength len1 ys of -- exactLength is needed here to ensure type safety (== check would not work)
                     Nothing => putStrLn "Vectors are of different lengths"
                     Just ys' => printLn $ zip xs ys'
-
-
