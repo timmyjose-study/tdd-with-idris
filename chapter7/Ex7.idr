@@ -79,3 +79,25 @@ foobar = let x = the (Expr Integer) 6 * 3 + 12 in
 foobaz : Int
 foobaz = let y = the (Expr Int) 1 + 2 * 3 + 4 * 5 in
              the Int (cast y)
+
+Functor Expr where
+  -- map : (a -> b) -> Expr a -> Expr b
+  map func (Val n) = Val (func n)
+  map func (Add x y) = Add (map func x) (map func y)
+  map func (Sub x y) = Sub (map func x) (map func y)
+  map func (Mul x y) = Mul (map func x) (map func y)
+  map func (Div x y) = Div (map func x) (map func y)
+  map func (Abs x) = Abs (map func x)
+
+data Vect : (len : Nat) -> (elem : Type) -> Type where
+  Nil : Vect Z elem
+  (::) : (x : elem) -> Vect len elem -> Vect (S len) elem
+
+Eq elem => Eq (Vect n elem) where
+  (==) [] [] = True
+  (==) (x :: xs) (y :: ys) = x == y && xs == ys
+
+Foldable (Vect n) where
+  -- foldr : (a -> b -> b) -> b -> Vect n a -> b
+  foldr func acc [] = acc
+  foldr func acc (x :: xs) = func x (foldr func acc xs)
